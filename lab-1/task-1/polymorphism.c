@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "task-1.h"
+#include "polymorphism.h"
 
 #define DEFAULT_DOG_NAME "Dog"
 #define N_DOGS 5
@@ -86,22 +86,22 @@ void testAnimals(void)
 
 char const* dogGreet(void)
 {
-    return "vau!";
+    return "woof!";
 }
 
 char const* dogMenu(void)
 {
-    return "kuhanu govedinu";
+    return "boiled beef";
 }
 
 char const* catGreet(void)
 {
-    return "mijau!";
+    return "meow!";
 }
 
 char const* catMenu(void)
 {
-    return "konzerviranu tunjevinu";
+    return "canned tuna";
 }
 
 struct Animal** creteMultipleDogs(int n)

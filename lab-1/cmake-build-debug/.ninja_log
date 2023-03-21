@@ -1,8 +1,9 @@
 # ninja log v5
-0	29	1679327658221076080	CMakeFiles/lab_1.dir/task-1.c.o	d74819af49fc4fb7
-0	27	1679331733352305664	build.ninja	d63924acd671d7aa
-29	51	1679327658245076176	lab_1	1b8607fc87f1d6e3
-0	57	1679333468319501152	CMakeFiles/lab_1.dir/task-1.c.o	d74819af49fc4fb7
-57	89	1679333468351500670	lab_1	1b8607fc87f1d6e3
+1	26	1679347710942020011	CMakeFiles/lab_1.dir/task-2/square.c.o	326951ceecbbd958
+0	42	1679337254718704755	CMakeFiles/lab_1.dir/task-1/polymorphism.c.o	c65f245de08fa76
 0	35	1679333643989246642	CMakeFiles/lab_1.dir/task-1.c.o	d74819af49fc4fb7
-36	55	1679333644009246424	lab_1	1b8607fc87f1d6e3
+1	26	1679347710942020011	CMakeFiles/lab_1.dir/task-2/linear.c.o	fd7f445afa7e82a1
+0	30	1679385829258677529	build.ninja	d63924acd671d7aa
+0	26	1679347710942020011	CMakeFiles/lab_1.dir/task-2/main.c.o	d73eb5b7e55a65dd
+1	34	1679347710950019957	CMakeFiles/lab_1.dir/task-2/unary_function.c.o	8915fcfaafdc934b
+0	22	1679337254698704851	CMakeFiles/lab_1.dir/task-2/virtual_tables.c.o	d2611958be19f1ce

@@ -8,6 +8,10 @@ target/
 *.pdf
 *.bin
 
+### C/C++ ###
+*.exe
+*.out
+
 ### IntelliJ IDEA ###
 .idea
 *.iws

@@ -1,0 +1,26 @@
+Explain the program output by analyzing the compiled machine code.
+Note who, when, and where sets/modifies the pointer to the virtual function table.
+
+int main()
+{
+    Derived* pd = new Derived();
+    pd->method();
+}
+
+Output:
+    Method says: I'm the base implementation
+    Method says: I'm the derived implementation
+    Method says: I'm the derived implementation
+
+The order of execution:
+
+Derived* pd = new Derived(); => 1. Derived() //Constructor
+                                2. Base()    //Constructor
+                                3. Base::method()
+                                4. Base::virtualMethod()
+                                5. Derived::method()
+                                6. Derived::method()
+
+
+pd->method(); results in:    => 7. Derived::method()
+                                8. Derived::virtualMethod()

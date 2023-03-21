@@ -1,22 +1,23 @@
 #include <cstdio>
 
-class CoolClass{
+class CoolClass {
 public:
-    virtual void set(int x){x_=x;};
-    virtual int get(){return x_;};
+    virtual void set(int x) { x_=x; };
+    virtual int get() { return x_; };
 private:
     int x_;
 };
 
-class PlainOldClass{
+class PlainOldClass {
 public:
-    void set(int x){x_=x;};
-    int get(){return x_;};
+    void set(int x) { x_=x; };
+    int get() { return x_; };
 private:
     int x_;
 };
 
-int main() {
+int main()
+{
     printf("sizeof(CoolClass)    : %lu\n", sizeof(CoolClass));
     printf("sizeof(PlainOldClass): %lu\n", sizeof(PlainOldClass));
 

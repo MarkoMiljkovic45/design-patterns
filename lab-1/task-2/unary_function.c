@@ -1,6 +1,6 @@
-#include "unary_function.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include "unary_function.h"
 
 PTRFUN unary_function_vtable[] = {NULL, (PTRFUN) negative_value_at};
 
@@ -15,7 +15,6 @@ Unary_Function* create_unary_function(int lower_bound, int upper_bound)
 {
     Unary_Function *uf = (Unary_Function*) malloc(sizeof (Unary_Function));
     construct_unary_function(uf, lower_bound, upper_bound);
-
     return uf;
 }
 
@@ -37,19 +36,4 @@ void tabulate(Unary_Function* uf) {
     {
         printf("f(%d)=%lf\n", i, value_at(uf, i));
     }
-}
-
-bool same_functions_for_ints(Unary_Function* f1, Unary_Function* f2, double tolerance)
-{
-    double (*value_at_f1)(double) = (double(*)(double)) f1->vtable[0];
-    double (*value_at_f2)(double) = (double(*)(double)) f2->vtable[0];
-
-    if(f1->lower_bound != f2->lower_bound) return false;
-    if(f1->upper_bound != f2->upper_bound) return false;
-    for(int x = f1->lower_bound; x <= f1->upper_bound; x++) {
-        double delta = value_at_f1(x) - value_at_f2(x);
-        if(delta < 0) delta = -delta;
-        if(delta > tolerance) return false;
-    }
-    return true;
 }

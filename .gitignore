@@ -4,6 +4,7 @@ target/
 !**/src/test/**/target/
 
 ### Misic ###
+venv
 *.zip
 *.pdf
 *.bin

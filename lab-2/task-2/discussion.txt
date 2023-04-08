@@ -1,0 +1,6 @@
+The advantage of using templates over using pointers to functions as arguments in C
+is that we gained flexibility and upgradability in terms of what type of container we
+can use.
+
+The downside is that we have to recompile our code if the container implementation
+changes.

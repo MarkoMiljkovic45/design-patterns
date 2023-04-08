@@ -1,0 +1,3 @@
+/home/marko/Workspace/FER/OOUP/design-patterns/lab-2/cmake-build-debug/CMakeFiles/lab_2.dir
+/home/marko/Workspace/FER/OOUP/design-patterns/lab-2/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/marko/Workspace/FER/OOUP/design-patterns/lab-2/cmake-build-debug/CMakeFiles/rebuild_cache.dir

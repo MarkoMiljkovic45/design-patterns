@@ -1,0 +1,9 @@
+sizeof(CoolClass)    : 16
+sizeof(PlainOldClass): 4
+
+CoolClass:
+    virtual_table_pointer = 8 bytes
+    int x                 = 4 bytes + 4 bytes padding
+
+PlainOldClass:
+    int x = 4 bytes

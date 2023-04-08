@@ -1,0 +1,75 @@
+1. Q: Find the parts of the assembly code where the memory allocation for poc and *pb objects takes place.
+   A: Allocation for poc:   (line 145)  sub	rsp, 40
+
+      Allocation for *pb:   (line 150)  mov	edi, 16         ; sizeof(CoolClass) used by the operator new
+                            (line 151)  call	_Znwm@PLT   ; Operator new allocates memory on the heap
+
+2. Q: Explain the difference in how these objects are allocated.
+   A: The poc object is entirely located on the stack.
+      *pb is just a pointer located on the stack. It points to the CoolClass object located in the heap.
+
+3. Q: Find the part of the assembler code that is responsible for calling the constructor of the poc object,
+      if such a call exists.
+   A: The compiler doesn't call the constructor because poc is entirely on the stack
+
+4. Q: Find the part of the assembler code that is responsible for calling the constructor of the *pb object.
+      Consider exactly how that code is executed. What happens in it?
+   A:   (line 154) call	CoolClass::CoolClass()
+
+        CoolClass::CoolClass():
+       	    push	rbp                             ; Save stack base pointer
+       	    mov	rbp, rsp                            ; New stack base
+        	sub	rsp, 16
+        	mov	QWORD PTR -8[rbp], rdi              ; rdi contains the address for the heap allocated memory
+        	mov	rax, QWORD PTR -8[rbp]
+        	mov	rdi, rax
+        	call	Base::Base()                    ; Call Base constructor
+        	lea	rdx, vtable for CoolClass[rip 16]   ; Load vtable address into rdx
+        	mov	rax, QWORD PTR -8[rbp]              ; Move pointer to object on heap to rax
+        	mov	QWORD PTR [rax], rdx                ; Move pointer to vtable (rdx) to the beginning of the object PTR[rdx]
+        	nop
+        	leave
+        	.cfi_def_cfa 7, 8
+        	ret
+
+5. Q: Observe how the compiler performed the calls pb->set and poc.set.
+      Explain the difference between the performance of the two calls. Which of the two calls requires fewer instructions?
+      For which of those two implementations could the optimizing compiler generate code without the CALL instruction,
+      i.e. directly insert the implementation of the function (inlining)?
+   A: poc.set
+        lea	rax, -36[rbp]                   ; Load start of poc object to rax
+        mov	esi, 42                         ; Move method argument (42) to esi
+        mov	rdi, rax                        ; Move method argument (poc) to rdi
+        call	PlainOldClass::set(int)
+
+      pb->set
+        mov	rax, QWORD PTR -32[rbp]     ; Move pointer *pb to rax
+        mov	rax, QWORD PTR [rax]        ; Move vtable address to rax
+        mov	rdx, QWORD PTR [rax]        ; Move address to first method in vtable to rdx
+        mov	rax, QWORD PTR -32[rbp]     ; Move pointer *pb to rax
+        mov	esi, 42                     ; Move method argument (42) to esi
+        mov	rdi, rax                    ; Move method argument (*pb) to rax
+        call	rdx                     ; Call rdx (first method in vtable)
+
+        The non-virtual method call requires fewer instructions and can be optimized by using inlining.
+        Virtual method calls are longer and can't be optimized using inlining because they are known only
+        during runtime
+
+6. Q: Find the assembly code for the definition and initialization of the virtual function table
+      of the CoolClass class.
+   A: Declaration in line 195
+        vtable for Base:
+        	.quad	0
+        	.quad	typeinfo for Base
+        	.quad	__cxa_pure_virtual
+        	.quad	__cxa_pure_virtual
+        	.weak	typeinfo for CoolClass
+        	.section	.data.rel.ro.typeinfo for CoolClass,"awG",@progbits,typeinfo for CoolClass,comdat
+        	.align 8
+        	.type	typeinfo for CoolClass, @object
+        	.size	typeinfo for CoolClass, 24
+
+        Definition in line 120
+            lea	rdx, vtable for CoolClass[rip 16]   ; Load vtable address into rdx
+            mov	rax, QWORD PTR -8[rbp]              ; Move pointer to object on heap to rax
+            mov	QWORD PTR [rax], rdx                ; Move pointer to vtable (rdx) to the beginning of the object PTR[rdx]

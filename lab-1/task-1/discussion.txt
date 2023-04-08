@@ -1,0 +1,18 @@
+After solving the task, make a connection with terminology from object-oriented languages.
+
+Which elements of your solution would correspond to object:
+    1. data fields
+    2. methods
+    3. virtual methods
+    4. constructors
+
+1. Object data fields correspond to structure variables
+
+2. Object methods correspond to regular C functions
+   C doesn't allow function definition within structures, but you
+   can add function pointers to the structure that represents an Object.
+
+3. Object virtual methods correspond to the function pointer arrays
+   that I created for each Object type (dog_table, cat_table)
+
+4. Object constructors correspond to the constructDog and constructCat functions

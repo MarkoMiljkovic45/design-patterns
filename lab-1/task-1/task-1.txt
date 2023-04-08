@@ -1,0 +1,27 @@
+This exercise looks at implementing dynamic polymorphism in the C programming language.
+It is necessary to write low-level code that would enable the attached test function to execute correctly.
+
+void testAnimals(void){
+  struct Animal* p1=createDog("Hamlet");
+  struct Animal* p2=createCat("Ofelija");
+  struct Animal* p3=createDog("Polonije");
+
+  animalPrintGreeting(p1);
+  animalPrintGreeting(p2);
+  animalPrintGreeting(p3);
+
+  animalPrintMenu(p1);
+  animalPrintMenu(p2);
+  animalPrintMenu(p3);
+
+  free(p1); free(p2); free(p3);
+}
+
+Expected output:
+
+Hamlet greets: woof!!
+Ofelija greets: meow!!
+Polonije greets: woof!!
+Hamlet likes: boiled beef!
+Ofelija likes: canned tuna!
+Polonije likes: boiled beef!

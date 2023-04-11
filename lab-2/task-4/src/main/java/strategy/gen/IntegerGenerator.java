@@ -1,5 +1,7 @@
 package strategy.gen;
 
+import java.util.List;
+
 public interface IntegerGenerator {
-    int generateInt();
+    List<Integer> gen();
 }

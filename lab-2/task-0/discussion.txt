@@ -1,0 +1,3 @@
+By using Object oriented programing and polymorphic function calls
+we can achieve the Upgradability without change principle and eliminate
+stiffness and fragility of our code.

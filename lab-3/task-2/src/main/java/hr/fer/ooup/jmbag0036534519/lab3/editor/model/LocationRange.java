@@ -35,10 +35,10 @@ public class LocationRange {
     }
 
     public void setStart(Location start) {
-        this.start = start;
+        this.start = new Location(start);
     }
 
     public void setEnd(Location end) {
-        this.end = end;
+        this.end = new Location(end);
     }
 }

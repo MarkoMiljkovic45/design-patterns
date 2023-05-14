@@ -72,78 +72,64 @@ public class TextEditorModel {
         cursorObservers.add(observer);
     }
 
-    public void removeCursorObserver(CursorObserver observer) {
-        cursorObservers.remove(observer);
-    }
-
     private void notifyCursorObservers() {
         cursorObservers.forEach(o -> o.updateCursorLocation(cursorLocation));
     }
 
-    private boolean moveCursor(int row, int col) {
+    public void moveCursor(int row, int col) {
         if (row > 0 && col >= 0) {
             cursorLocation.setRow(row);
             cursorLocation.setColumn(col);
-
-            return true;
+            notifyCursorObservers();
         }
+    }
 
-        return false;
+    public void moveCursor(Location loc) {
+        moveCursor(loc.getRow(), loc.getColumn());
     }
 
     public void moveCursorLeft() {
-        if (moveCursor(cursorLocation.getRow(), cursorLocation.getColumn() - 1)) {
-            notifyCursorObservers();
-        }
+        moveCursor(cursorLocation.getRow(), cursorLocation.getColumn() - 1);
     }
 
     public void moveCursorRight() {
-        if (moveCursor(cursorLocation.getRow(), cursorLocation.getColumn() + 1)) {
-            notifyCursorObservers();
-        }
+        moveCursor(cursorLocation.getRow(), cursorLocation.getColumn() + 1);
     }
 
     public void moveCursorUp() {
-        if (moveCursor(cursorLocation.getRow() - 1, cursorLocation.getColumn())) {
-            notifyCursorObservers();
-        }
+        moveCursor(cursorLocation.getRow() - 1, cursorLocation.getColumn());
     }
 
     public void moveCursorDown() {
-        if (moveCursor(cursorLocation.getRow() + 1, cursorLocation.getColumn())) {
-            notifyCursorObservers();
-        }
+        moveCursor(cursorLocation.getRow() + 1, cursorLocation.getColumn());
     }
 
     public void addTextObserver(TextObserver observer) {
         textObservers.add(observer);
     }
 
-    public void removeTextObserver(TextObserver observer) {
-        textObservers.remove(observer);
-    }
-
     private void notifyAllTextObservers() {
         textObservers.forEach(TextObserver::updateText);
     }
 
-    private boolean deleteCharAt(int row, int col) {
-        try {
-            String line = lines.get(row - 1);
+    private void deleteCharAt(int row, int col) {
+        int i = row - 1;
 
-            String editedLine;
+        if (i >= 0 && i < lines.size()) {
+            String line = lines.get(i);
 
-            if (line.length() == col) {
-                editedLine = line.substring(0, col - 1);
-            } else {
-                editedLine = line.substring(0, col - 1) + line.substring(col + 1);
+            if (col <= line.length()) {
+                String editedLine;
+
+                if (line.length() == col) {
+                    editedLine = line.substring(0, col - 1);
+                } else {
+                    editedLine = line.substring(0, col - 1) + line.substring(col);
+                }
+
+                lines.set(row - 1, editedLine);
+                notifyAllTextObservers();
             }
-
-            lines.set(row - 1, editedLine);
-            return true;
-        }
-        catch (IndexOutOfBoundsException e) {
-            return false;
         }
     }
 
@@ -151,19 +137,15 @@ public class TextEditorModel {
      * Deletes a character that is before the cursor and moves the cursor left
      */
     public void deleteBefore() {
-        if (deleteCharAt(cursorLocation.getRow(), cursorLocation.getColumn())) {
-            notifyAllTextObservers();
-            moveCursorLeft();
-        }
+        deleteCharAt(cursorLocation.getRow(), cursorLocation.getColumn());
+        moveCursorLeft();
     }
 
     /**
      * Deletes a character that is after the cursor
      */
     public void deleteAfter() {
-        if (deleteCharAt(cursorLocation.getRow(), cursorLocation.getColumn() + 1)) {
-            notifyAllTextObservers();
-        }
+        deleteCharAt(cursorLocation.getRow(), cursorLocation.getColumn() + 1);
     }
 
     /**
@@ -171,7 +153,69 @@ public class TextEditorModel {
      * @param r range of text to be deleted
      */
     public void deleteRange(LocationRange r) {
-        //TODO
+        int startRow;
+        int startCol;
+        int endRow;
+        int endCol;
+
+        if (r.getStart().compareTo(r.getEnd()) < 0) {
+            startRow = r.getStart().getRow();
+            startCol = r.getStart().getColumn();
+            endRow = r.getEnd().getRow();
+            endCol = r.getEnd().getColumn();
+        } else {
+            startRow = r.getEnd().getRow();
+            startCol = r.getEnd().getColumn();
+            endRow = r.getStart().getRow();
+            endCol = r.getStart().getColumn();
+        }
+
+        int index = startRow - 1;
+
+        if (index > lines.size()) {
+            return;
+        }
+
+        if (startRow == endRow) {
+            String line = lines.get(index);
+            String editedLine = "";
+
+            if (startCol < line.length()) {
+                editedLine += line.substring(0, startCol);
+            }
+
+            if (endCol < line.length()) {
+                editedLine += line.substring(endCol);
+            }
+
+            lines.set(index, editedLine);
+        } else {
+            //First line
+            String firstLine = lines.get(index);
+            String editedLine = "";
+
+            if (startCol < firstLine.length()) {
+                editedLine += firstLine.substring(0, startCol);
+            }
+
+            lines.set(index++, editedLine);
+
+            //Middle lines
+            while (index < --endRow) {
+                lines.remove(index);
+            }
+
+            //Last Line
+            String lastLine = lines.get(index);
+            editedLine = "";
+
+            if (endCol < lastLine.length()) {
+                editedLine += lastLine.substring(endCol);
+            }
+
+            lines.set(index, editedLine);
+        }
+
         notifyAllTextObservers();
     }
 

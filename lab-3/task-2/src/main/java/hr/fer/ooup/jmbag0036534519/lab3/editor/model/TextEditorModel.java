@@ -89,8 +89,10 @@ public class TextEditorModel {
                 if (index != 0) {
                     moveCursor(row - 1, lines.get(index-1).length());
                 }
-            } else {
+            } else if (cursorLocation.getRow() == row) {
                 moveCursor(row + 1, 0);
+            } else {
+                moveCursor(row, lines.get(index).length());
             }
         }
     }
@@ -239,7 +241,8 @@ public class TextEditorModel {
                 editedLine += lastLine.substring(endCol);
             }
 
-            lines.set(index, editedLine);
+            lines.remove(index--);
+            lines.set(index, lines.get(index) + editedLine);
         }
 
         notifyAllTextObservers();
@@ -319,7 +322,53 @@ public class TextEditorModel {
 
         for (char c: chars) {
             insert(c);
-            moveCursorRight();
+        }
+    }
+
+    public String getTextFromRange(LocationRange r) {
+        int startRow;
+        int startCol;
+        int endRow;
+        int endCol;
+
+        if (r.getStart().compareTo(r.getEnd()) < 0) {
+            startRow = r.getStart().getRow();
+            startCol = r.getStart().getColumn();
+            endRow = r.getEnd().getRow();
+            endCol = r.getEnd().getColumn();
+        } else {
+            startRow = r.getEnd().getRow();
+            startCol = r.getEnd().getColumn();
+            endRow = r.getStart().getRow();
+            endCol = r.getStart().getColumn();
+        }
+
+        int index = startRow - 1;
+
+        if (index > lines.size()) {
+            return "";
+        }
+
+        if (startRow == endRow) {
+            String line = lines.get(index);
+            return line.substring(startCol, endCol);
+        } else {
+            StringBuilder selection = new StringBuilder();
+
+            //First line
+            String firstLine = lines.get(index++);
+            selection.append(firstLine.substring(startCol));
+
+            //Middle lines
+            while (index < endRow - 1) {
+                selection.append(lines.get(index++));
+            }
+
+            //Last Line
+            String lastLine = lines.get(index);
+            selection.append(lastLine, 0, endCol);
+
+            return selection.toString();
         }
     }
 }

@@ -1,5 +1,6 @@
 package hr.fer.ooup.jmbag0036534519.lab3.editor.component;
 
+import hr.fer.ooup.jmbag0036534519.lab3.editor.model.ClipboardStack;
 import hr.fer.ooup.jmbag0036534519.lab3.editor.model.Location;
 import hr.fer.ooup.jmbag0036534519.lab3.editor.model.LocationRange;
 import hr.fer.ooup.jmbag0036534519.lab3.editor.model.TextEditorModel;
@@ -13,18 +14,16 @@ import java.util.Iterator;
 public class TextEditor extends JComponent {
 
     private final TextEditorModel model;
+    private final ClipboardStack clipboardStack;
 
     public TextEditor(String text) {
         model = new TextEditorModel(text);
+        clipboardStack = new ClipboardStack();
         model.addCursorObserver(loc -> repaint());
         model.addTextObserver(this::repaint);
 
         setFocusable(true);
         addKeyListener(new TextEditorKeyListener());
-    }
-
-    public TextEditorModel getModel() {
-        return model;
     }
 
     @Override
@@ -104,23 +103,30 @@ public class TextEditor extends JComponent {
     private class TextEditorKeyListener extends KeyAdapter {
 
         private volatile boolean isShiftPressed;
+        private volatile boolean isCtrlPressed;
 
-        public TextEditorKeyListener(boolean isShiftPressed) {
+        public TextEditorKeyListener(boolean isShiftPressed, boolean isCtrlPressed) {
             this.isShiftPressed = isShiftPressed;
+            this.isCtrlPressed = isCtrlPressed;
         }
 
         public TextEditorKeyListener() {
-            this(false);
+            this(false, false);
         }
 
         public void setShiftPressed(boolean shiftPressed) {
             isShiftPressed = shiftPressed;
         }
 
+        public void setCtrlPressed(boolean ctrlPressed) {
+            isCtrlPressed = ctrlPressed;
+        }
+
         @Override
         public void keyPressed(KeyEvent e) {
             switch (e.getKeyCode()) {
                 case KeyEvent.VK_SHIFT -> setShiftPressed(true);
+                case KeyEvent.VK_CONTROL -> setCtrlPressed(true);
                 case KeyEvent.VK_KP_LEFT, KeyEvent.VK_LEFT -> left();
                 case KeyEvent.VK_KP_RIGHT, KeyEvent.VK_RIGHT -> right();
                 case KeyEvent.VK_KP_UP, KeyEvent.VK_UP -> up();
@@ -133,8 +139,9 @@ public class TextEditor extends JComponent {
 
         @Override
         public void keyReleased(KeyEvent e) {
-            if (e.getKeyCode() == KeyEvent.VK_SHIFT) {
-                setShiftPressed(false);
+            switch (e.getKeyCode()) {
+                case KeyEvent.VK_SHIFT -> setShiftPressed(false);
+                case KeyEvent.VK_CONTROL -> setCtrlPressed(false);
             }
         }
 
@@ -206,7 +213,62 @@ public class TextEditor extends JComponent {
         }
 
         private void key(KeyEvent e) {
-            model.insert(e.getKeyChar());
+            if (isCtrlPressed) {
+                switch (e.getKeyCode()) {
+                    case KeyEvent.VK_C -> copy();
+                    case KeyEvent.VK_X -> cut();
+                    case KeyEvent.VK_V -> paste();
+                    default -> insertChar(e.getKeyChar());
+                }
+            } else {
+                insertChar(e.getKeyChar());
+            }
+        }
+
+        private void insertChar(char c) {
+            LocationRange selection = model.getSelectionRange();
+
+            if (!selection.getStart().equals(selection.getEnd())) {
+                deleteRange();
+            }
+
+            model.insert(c);
+        }
+
+        private void copy() {
+            LocationRange selection = model.getSelectionRange();
+
+            if (!selection.getStart().equals(selection.getEnd())) {
+                clipboardStack.push(model.getTextFromRange(selection));
+            }
+        }
+
+        private void cut() {
+            LocationRange selection = model.getSelectionRange();
+
+            if (!selection.getStart().equals(selection.getEnd())) {
+                clipboardStack.push(model.getTextFromRange(selection));
+                deleteRange();
+            }
+        }
+
+        private void paste() {
+            if (clipboardStack.isEmpty()) {
+                return;
+            }
+
+            String text = clipboardStack.peek();
+            LocationRange selection = model.getSelectionRange();
+
+            if (!selection.getStart().equals(selection.getEnd())) {
+                deleteRange();
+            }
+
+            model.insert(text);
+
+            if (isShiftPressed) {
+                clipboardStack.pop();
+            }
         }
     }
 }

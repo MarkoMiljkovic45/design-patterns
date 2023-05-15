@@ -77,10 +77,21 @@ public class TextEditorModel {
     }
 
     public void moveCursor(int row, int col) {
-        if (row > 0 && col >= 0) {
-            cursorLocation.setRow(row);
-            cursorLocation.setColumn(col);
-            notifyCursorObservers();
+        int index = row - 1;
+
+        if (row > 0 && index < lines.size()) {
+            String line = lines.get(index);
+            if (col >= 0 && col <= line.length()) {
+                cursorLocation.setRow(row);
+                cursorLocation.setColumn(col);
+                notifyCursorObservers();
+            } else if (col < 0){
+                if (index != 0) {
+                    moveCursor(row - 1, lines.get(index-1).length());
+                }
+            } else {
+                moveCursor(row + 1, 0);
+            }
         }
     }
 
@@ -113,23 +124,35 @@ public class TextEditorModel {
     }
 
     private void deleteCharAt(int row, int col) {
-        int i = row - 1;
+        int index = row - 1;
 
-        if (i >= 0 && i < lines.size()) {
-            String line = lines.get(i);
+        if (index < 0 || index > lines.size()) {
+            return;
+        }
 
-            if (col <= line.length()) {
-                String editedLine;
+        String line = lines.get(index);
 
-                if (line.length() == col) {
-                    editedLine = line.substring(0, col - 1);
-                } else {
-                    editedLine = line.substring(0, col - 1) + line.substring(col);
-                }
+        if (col > 0 && col <= line.length()) {
+            String editedLine;
 
-                lines.set(row - 1, editedLine);
-                notifyAllTextObservers();
+            if (line.length() == col) {
+                editedLine = line.substring(0, col - 1);
+            } else {
+                editedLine = line.substring(0, col - 1) + line.substring(col);
             }
+
+            lines.set(row - 1, editedLine);
+            notifyAllTextObservers();
+        }
+        if (col == 0 && index > 0) {
+            lines.remove(index);
+            lines.set(index-1, lines.get(index-1) + line);
+            notifyAllTextObservers();
+        }
+        if (col > line.length() && index + 1 < lines.size()) {
+            lines.set(index, line + lines.get(index+1));
+            lines.remove(index+1);
+            notifyAllTextObservers();
         }
     }
 
@@ -137,8 +160,11 @@ public class TextEditorModel {
      * Deletes a character that is before the cursor and moves the cursor left
      */
     public void deleteBefore() {
-        deleteCharAt(cursorLocation.getRow(), cursorLocation.getColumn());
+        int row = cursorLocation.getRow();
+        int col = cursorLocation.getColumn();
+
         moveCursorLeft();
+        deleteCharAt(row, col);
     }
 
     /**
@@ -232,5 +258,68 @@ public class TextEditorModel {
      */
     public void setSelectionRange(LocationRange range) {
         selectionRange = range;
+    }
+
+    /**
+     * Inserts the character at the cursor location
+     * @param c character to be inserted
+     */
+    public void insert(char c) {
+        int row = cursorLocation.getRow();
+        int col = cursorLocation.getColumn();
+
+        int index = row - 1;
+
+        if (index < 0) {
+            return;
+        }
+
+        if (index > lines.size()) {
+            lines.add(index, Character.toString(c));
+        }
+
+        String line = lines.get(index);
+
+        if (col > 0 && col < line.length()) {
+            String firstPart = line.substring(0, col);
+            String secondPart = line.substring(col);
+
+            if (c == '\n') {
+                lines.set(index, firstPart);
+                lines.add(index + 1, secondPart);
+            } else {
+                lines.set(index, firstPart + c + secondPart);
+            }
+        } else if (col == 0) {
+            if (c == '\n') {
+                lines.add(index, "");
+            } else {
+                lines.set(index, c + line);
+            }
+        } else if (col == line.length()) {
+            if (c == '\n') {
+                lines.add(index+1, "");
+            } else {
+                lines.set(index, line + c);
+            }
+        } else {
+            return;
+        }
+
+        notifyAllTextObservers();
+        moveCursorRight();
+    }
+
+    /**
+     * Inserts text at cursor location (potentially multiple lines) at the cursor location
+     * @param text to be inserted
+     */
+    public void insert(String text) {
+        char[] chars = text.toCharArray();
+
+        for (char c: chars) {
+            insert(c);
+            moveCursorRight();
+        }
     }
 }

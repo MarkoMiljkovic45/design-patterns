@@ -127,6 +127,7 @@ public class TextEditor extends JComponent {
                 case KeyEvent.VK_KP_DOWN, KeyEvent.VK_DOWN -> down();
                 case KeyEvent.VK_DELETE -> del();
                 case KeyEvent.VK_BACK_SPACE -> backspace();
+                default -> key(e);
             }
         }
 
@@ -202,6 +203,10 @@ public class TextEditor extends JComponent {
                 selection.setStart(selection.getEnd());
                 model.moveCursor(selection.getEnd());
             }
+        }
+
+        private void key(KeyEvent e) {
+            model.insert(e.getKeyChar());
         }
     }
 }

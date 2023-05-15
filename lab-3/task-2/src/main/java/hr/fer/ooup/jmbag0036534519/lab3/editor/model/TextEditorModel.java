@@ -158,6 +158,26 @@ public class TextEditorModel {
         }
     }
 
+    public char charAt(int row, int col) {
+        int index = row - 1;
+
+        if (index < 0 || index > lines.size()) {
+            return '\0';
+        }
+
+        String line = lines.get(index);
+
+        if (col > 0 && col <= line.length()) {
+            return line.charAt(col - 1);
+        }
+
+        return '\n';
+    }
+
+    public char charAt(Location loc) {
+        return charAt(loc.getRow(), loc.getColumn());
+    }
+
     /**
      * Deletes a character that is before the cursor and moves the cursor left
      */
@@ -245,6 +265,16 @@ public class TextEditorModel {
             lines.set(index, lines.get(index) + editedLine);
         }
 
+        if (r.getStart().compareTo(r.getEnd()) < 0) {
+            selectionRange.setStart(r.getStart());
+            selectionRange.setEnd(r.getStart());
+            moveCursor(r.getStart());
+        } else {
+            selectionRange.setStart(r.getEnd());
+            selectionRange.setEnd(r.getEnd());
+            moveCursor(r.getEnd());
+        }
+
         notifyAllTextObservers();
     }
 
@@ -260,7 +290,8 @@ public class TextEditorModel {
      * @param range to be selected
      */
     public void setSelectionRange(LocationRange range) {
-        selectionRange = range;
+        selectionRange.setStart(range.getStart());
+        selectionRange.setEnd(range.getEnd());
     }
 
     /**

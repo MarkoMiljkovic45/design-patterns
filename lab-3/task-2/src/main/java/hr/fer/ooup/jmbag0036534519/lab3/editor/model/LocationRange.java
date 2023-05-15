@@ -26,6 +26,10 @@ public class LocationRange {
         this(new Location(), new Location());
     }
 
+    public LocationRange(LocationRange range) {
+        this(range.getStart(), range.getEnd());
+    }
+
     public Location getStart() {
         return start;
     }

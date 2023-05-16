@@ -1,7 +1,6 @@
 package hr.fer.ooup.jmbag0036534519.lab3.editor.component;
 
 import hr.fer.ooup.jmbag0036534519.lab3.editor.model.*;
-import hr.fer.ooup.jmbag0036534519.lab3.editor.model.observers.UndoManagerObserver;
 
 import javax.swing.*;
 import java.awt.*;
@@ -9,38 +8,34 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.Iterator;
 
-public class TextEditor extends JComponent {
+public class MyTextArea extends JComponent {
 
     private final TextEditorModel model;
-    private final ClipboardStack clipboardStack;
     private final UndoManager undoManager;
-    private boolean undoStackEmpty;
-    private boolean redoStackEmpty;
+    private final TextEditorKeyListener keyListener;
 
-    public TextEditor(String text) {
+    public MyTextArea(String text) {
         model = new TextEditorModel(text);
-        clipboardStack = new ClipboardStack();
         undoManager = new UndoManager();
-        undoStackEmpty = true;
-        redoStackEmpty = true;
+        keyListener = new TextEditorKeyListener();
 
         model.addCursorObserver(loc -> repaint());
         model.addTextObserver(this::repaint);
 
-        undoManager.addUndoManagerObserver(new UndoManagerObserver() {
-            @Override
-            public void undoStackUpdated(boolean isEmpty) {
-                undoStackEmpty = isEmpty;
-            }
-
-            @Override
-            public void redoStackUpdated(boolean isEmpty) {
-                redoStackEmpty = isEmpty;
-            }
-        });
-
         setFocusable(true);
-        addKeyListener(new TextEditorKeyListener());
+        addKeyListener(keyListener);
+    }
+
+    public TextEditorModel getModel() {
+        return model;
+    }
+
+    public UndoManager getUndoManager() {
+        return undoManager;
+    }
+
+    public TextEditorKeyListener getKeyListener() {
+        return keyListener;
     }
 
     @Override
@@ -117,7 +112,7 @@ public class TextEditor extends JComponent {
         }
     }
 
-    private class TextEditorKeyListener extends KeyAdapter {
+    public class TextEditorKeyListener extends KeyAdapter {
 
         private volatile boolean isShiftPressed;
         private volatile boolean isCtrlPressed;
@@ -150,7 +145,7 @@ public class TextEditor extends JComponent {
                 case KeyEvent.VK_KP_DOWN, KeyEvent.VK_DOWN -> down();
                 case KeyEvent.VK_DELETE -> del();
                 case KeyEvent.VK_BACK_SPACE -> backspace();
-                default -> key(e);
+                default -> insertChar(e.getKeyChar());
             }
         }
 
@@ -195,7 +190,7 @@ public class TextEditor extends JComponent {
             selection.setEnd(cursorLocation);
         }
 
-        private void del() {
+        public void del() {
             LocationRange selection = model.getSelectionRange();
 
             if (selection.getStart().equals(selection.getEnd())) {
@@ -204,13 +199,13 @@ public class TextEditor extends JComponent {
                 undoManager.push(new EditAction() {
                     @Override
                     public void executeDo() {
-                        model.moveCursor(cursor);
+                        setCursor(cursor);
                         model.deleteAfter();
                     }
 
                     @Override
                     public void executeUndo() {
-                        model.moveCursor(cursor);
+                        setCursor(cursor);
                         model.insert(c);
                     }
                 });
@@ -230,14 +225,15 @@ public class TextEditor extends JComponent {
                 undoManager.push(new EditAction() {
                     @Override
                     public void executeDo() {
-                        model.moveCursor(cursor);
+                        setCursor(cursor);
                         model.deleteBefore();
                     }
 
                     @Override
                     public void executeUndo() {
-                        model.moveCursor(cursor);
+                        setCursor(cursor.getRow(), cursor.getColumn() - 1);
                         model.insert(c);
+                        model.moveCursorRight();
                     }
                 });
                 model.deleteBefore();
@@ -247,97 +243,96 @@ public class TextEditor extends JComponent {
             }
         }
 
-        private void addDeleteRangeAction() {
+        public void addDeleteRangeAction() {
             LocationRange selection = new LocationRange(model.getSelectionRange());
-            Location cursor = new Location(model.getCursorLocation());
+            Location cursor;
+
+            if (selection.getStart().compareTo(selection.getEnd()) < 0) {
+                cursor = new Location(selection.getStart());
+            } else {
+                cursor = new Location(selection.getEnd());
+            }
+
             String text = model.getTextFromRange(selection);
             undoManager.push(new EditAction() {
                 @Override
                 public void executeDo() {
-                    model.moveCursor(cursor);
+                    model.setSelectionRange(selection);
                     model.deleteRange(selection);
                 }
 
                 @Override
                 public void executeUndo() {
-                    model.moveCursor(cursor);
+                    setCursor(cursor);
                     model.insert(text);
                     model.setSelectionRange(selection);
                 }
             });
         }
 
-        private void key(KeyEvent e) {
-            if (isCtrlPressed) {
-                switch (e.getKeyCode()) {
-                    case KeyEvent.VK_C -> copy();
-                    case KeyEvent.VK_X -> cut();
-                    case KeyEvent.VK_V -> paste();
-                    case KeyEvent.VK_Z -> undo();
-                    case KeyEvent.VK_Y -> redo();
-                    default -> insertChar(e.getKeyChar());
-                }
-            } else {
-                insertChar(e.getKeyChar());
-            }
+        public void setCursor(int row, int col) {
+            Location cursor = model.getCursorLocation();
+            cursor.setRow(row);
+            cursor.setColumn(col);
+        }
+
+        public void setCursor(Location loc) {
+            setCursor(loc.getRow(), loc.getColumn());
         }
 
         private void insertChar(char c) {
-            LocationRange selection = model.getSelectionRange();
-
-            if (!selection.getStart().equals(selection.getEnd())) {
-                model.deleteRange(selection);
-            }
-
-            model.insert(c);
-        }
-
-        private void copy() {
-            LocationRange selection = model.getSelectionRange();
-
-            if (!selection.getStart().equals(selection.getEnd())) {
-                clipboardStack.push(model.getTextFromRange(selection));
-            }
-        }
-
-        private void cut() {
-            LocationRange selection = model.getSelectionRange();
-
-            if (!selection.getStart().equals(selection.getEnd())) {
-                clipboardStack.push(model.getTextFromRange(selection));
-                model.deleteRange(selection);
-            }
-        }
-
-        private void paste() {
-            if (clipboardStack.isEmpty()) {
+            if (isCtrlPressed) {
                 return;
             }
 
-            String text = clipboardStack.peek();
-            LocationRange selection = model.getSelectionRange();
+            LocationRange selection = new LocationRange(model.getSelectionRange());
+            Location cursor;
+
+            if (selection.getStart().compareTo(selection.getEnd()) < 0) {
+                cursor = new Location(selection.getStart());
+            } else {
+                cursor = new Location(selection.getEnd());
+            }
 
             if (!selection.getStart().equals(selection.getEnd())) {
+                String text = model.getTextFromRange(selection);
+                undoManager.push(new EditAction() {
+                    @Override
+                    public void executeDo() {
+                        model.setSelectionRange(selection);
+                        model.deleteRange(selection);
+                        model.insert(c);
+                        model.moveCursorRight();
+                    }
+
+                    @Override
+                    public void executeUndo() {
+                        setCursor(cursor.getRow(), cursor.getColumn() + 1);
+                        model.deleteBefore();
+                        model.insert(text);
+                        model.setSelectionRange(selection);
+                    }
+                });
                 model.deleteRange(selection);
+            } else {
+                undoManager.push(new EditAction() {
+                    @Override
+                    public void executeDo() {
+                        setCursor(cursor);
+                        model.insert(c);
+                        model.moveCursorRight();
+                    }
+
+                    @Override
+                    public void executeUndo() {
+                        setCursor(cursor.getRow(), cursor.getColumn() + 1);
+                        model.deleteBefore();
+                    }
+                });
             }
 
-            model.insert(text);
-
-            if (isShiftPressed) {
-                clipboardStack.pop();
-            }
-        }
-
-        private void undo() {
-            if (!undoStackEmpty) {
-                undoManager.undo();
-            }
-        }
-
-        private void redo() {
-            if (!redoStackEmpty) {
-                undoManager.redo();
-            }
+            model.insert(c);
+            model.moveCursorRight();
         }
     }
 }

@@ -3,6 +3,9 @@ package hr.fer.ooup.jmbag0036534519.lab3.editor.model;
 import hr.fer.ooup.jmbag0036534519.lab3.editor.model.observers.CursorObserver;
 import hr.fer.ooup.jmbag0036534519.lab3.editor.model.observers.TextObserver;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -97,6 +100,17 @@ public class TextEditorModel {
         }
     }
 
+    public void moveCursorToStart() {
+        cursorLocation.setRow(0);
+        cursorLocation.setColumn(0);
+    }
+
+    public void moveCursorToEnd() {
+        int lastRow = lines.size();
+        int lastCol = lines.get(lines.size() - 1).length();
+        moveCursor(lastRow, lastCol);
+    }
+
     public void moveCursor(Location loc) {
         moveCursor(loc.getRow(), loc.getColumn());
     }
@@ -123,6 +137,10 @@ public class TextEditorModel {
 
     private void notifyAllTextObservers() {
         textObservers.forEach(TextObserver::updateText);
+    }
+
+    public void clear() {
+        lines.clear();
     }
 
     private void deleteCharAt(int row, int col) {
@@ -336,12 +354,18 @@ public class TextEditorModel {
             } else {
                 lines.set(index, line + c);
             }
+        } else if(col > line.length()) {
+            if (c == '\n') {
+                lines.add(index+1, "");
+            } else {
+                String padding = " ".repeat(col - line.length());
+                lines.set(index, line + padding + c);
+            }
         } else {
             return;
         }
 
         notifyAllTextObservers();
-        moveCursorRight();
     }
 
     /**
@@ -353,6 +377,7 @@ public class TextEditorModel {
 
         for (char c: chars) {
             insert(c);
+            moveCursorRight();
         }
     }
 
@@ -392,14 +417,26 @@ public class TextEditorModel {
 
             //Middle lines
             while (index < endRow - 1) {
+                selection.append("\n");
                 selection.append(lines.get(index++));
             }
 
             //Last Line
+            selection.append("\n");
             String lastLine = lines.get(index);
             selection.append(lastLine, 0, endCol);
 
             return selection.toString();
         }
+    }
+
+    public void loadDocument(Path path) throws IOException {
+        List<String> documentLines = Files.readAllLines(path);
+        lines.clear();
+        lines.addAll(documentLines);
+    }
+
+    public void saveDocument(Path path) throws IOException {
+        Files.write(path, lines);
     }
 }

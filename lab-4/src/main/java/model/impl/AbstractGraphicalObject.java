@@ -25,7 +25,6 @@ public abstract class AbstractGraphicalObject implements GraphicalObject {
     @Override
     public void setHotPoint(int index, Point hotPoint) {
         hotPoints[index] = hotPoint;
-        notifyListeners();
     }
 
     @Override
@@ -64,6 +63,7 @@ public abstract class AbstractGraphicalObject implements GraphicalObject {
         for (int i = 0; i < hotPoints.length; i++) {
             hotPoints[i] = hotPoints[i].translate(diff);
         }
+        notifyListeners();
     }
 
     @Override

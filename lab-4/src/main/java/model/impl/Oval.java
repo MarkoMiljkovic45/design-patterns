@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Stack;
 
 public class Oval extends AbstractGraphicalObject {
-    private static final int NUM_OF_SAMPLES = 100;
+    private static final int NUM_OF_SAMPLES = 500;
 
     public Oval(Point rightHotPoint, Point downHotPoint) {
         super(new Point[] {rightHotPoint, downHotPoint});

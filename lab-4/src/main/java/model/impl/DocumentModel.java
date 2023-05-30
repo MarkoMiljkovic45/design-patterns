@@ -139,6 +139,8 @@ public class DocumentModel {
      * @param go objekt koji treba pomaknuti dolje
      */
     public void increaseZ(GraphicalObject go) {
+        if (go == null) return;
+
         int newZ = objects.indexOf(go) + 1;
 
         if (newZ < objects.size()) {
@@ -153,6 +155,8 @@ public class DocumentModel {
      * @param go objekt koji treba pomaknuti gore
      */
     public void decreaseZ(GraphicalObject go) {
+        if (go == null) return;
+
         int newZ = objects.indexOf(go) - 1;
 
         if (newZ > 0) {
@@ -184,7 +188,6 @@ public class DocumentModel {
         }
 
         if (nearestObject != null && minDistance < SELECTION_PROXIMITY) {
-            nearestObject.setSelected(true);
             return nearestObject;
         } else {
             return null;
@@ -222,5 +225,9 @@ public class DocumentModel {
         } else {
             return -1;
         }
+    }
+
+    public void deselectAll() {
+        selectedObjects.forEach(o -> o.setSelected(false));
     }
 }

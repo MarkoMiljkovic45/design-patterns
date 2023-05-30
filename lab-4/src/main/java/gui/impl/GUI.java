@@ -4,8 +4,6 @@ import gui.Renderer;
 import gui.State;
 import model.GraphicalObject;
 import model.impl.DocumentModel;
-import model.impl.LineSegment;
-import model.impl.Oval;
 import model.impl.Point;
 
 import javax.swing.*;
@@ -48,13 +46,38 @@ public class GUI extends JFrame {
         toolBar.setFloatable(true);
 
         for (GraphicalObject go: objectPrototypes) {
-            toolBar.add(new JButton(go.getShapeName()));
+            Action objectAction = new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    String shapeName = (String) getValue(NAME);
+                    objectPrototypes.stream()
+                            .filter(obj -> obj.getShapeName().equals(shapeName))
+                            .findFirst().ifPresent(object -> {
+                                currentState.onLeaving();
+                                currentState = new AddShapeState(documentModel, object);
+                            });
+                }
+            };
+
+            objectAction.putValue(Action.NAME, go.getShapeName());
+            toolBar.add(objectAction);
         }
 
         toolBar.addSeparator();
 
+        selectAction.putValue(Action.NAME, "Selektiraj");
+        toolBar.add(selectAction);
+
         getContentPane().add(toolBar, BorderLayout.PAGE_START);
     }
+
+    private final Action selectAction = new AbstractAction() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            currentState.onLeaving();
+            currentState = new SelectShapeState(documentModel);
+        }
+    };
 
     public class JCanvas extends JComponent {
 

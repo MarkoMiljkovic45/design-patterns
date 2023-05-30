@@ -4,6 +4,7 @@ import model.GraphicalObject;
 import model.listeners.GraphicalObjectListener;
 import util.GeometryUtil;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public abstract class AbstractGraphicalObject implements GraphicalObject {
@@ -15,6 +16,8 @@ public abstract class AbstractGraphicalObject implements GraphicalObject {
     protected AbstractGraphicalObject(Point[] hotPoints) {
         this.hotPoints = hotPoints;
         this.hotPointSelected = new boolean[hotPoints.length];
+        this.selected = false;
+        this.listeners = new ArrayList<>();
     }
 
     @Override

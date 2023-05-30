@@ -1,5 +1,6 @@
 package model;
 
+import gui.Renderer;
 import model.impl.Point;
 import model.impl.Rectangle;
 import model.listeners.GraphicalObjectListener;

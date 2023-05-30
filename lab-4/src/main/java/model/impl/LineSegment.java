@@ -1,7 +1,7 @@
 package model.impl;
 
 import model.GraphicalObject;
-import model.Renderer;
+import gui.Renderer;
 import util.GeometryUtil;
 
 import java.util.List;
@@ -43,7 +43,7 @@ public class LineSegment extends AbstractGraphicalObject {
 
     @Override
     public void render(Renderer r) {
-        //TODO
+        r.drawLine(start(), end());
     }
 
     @Override

@@ -1,7 +1,7 @@
 package model.impl;
 
 import model.GraphicalObject;
-import model.Renderer;
+import gui.Renderer;
 import util.GeometryUtil;
 
 import java.util.List;
@@ -95,7 +95,7 @@ public class Oval extends AbstractGraphicalObject {
 
     @Override
     public void render(Renderer r) {
-        //TODO
+        r.fillPolygon(samplePoints());
     }
 
     @Override

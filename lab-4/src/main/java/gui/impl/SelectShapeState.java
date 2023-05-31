@@ -4,8 +4,8 @@ import gui.Renderer;
 import model.GraphicalObject;
 import model.impl.CompositeShape;
 import model.impl.DocumentModel;
-import model.impl.Point;
-import model.impl.Rectangle;
+import util.Point;
+import util.Rectangle;
 
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
@@ -91,7 +91,7 @@ public class SelectShapeState extends SimpleState {
             case KeyEvent.VK_U -> {
                 if (selectedObject != null) {
                     if (selectedObject instanceof CompositeShape group) {
-                        List<GraphicalObject> objects = group.getObjects();
+                        List<GraphicalObject> objects = group.getChildren();
                         objects.forEach(obj -> obj.setSelected(true));
                         model.removeGraphicalObject(group);
                         objects.forEach(model::addGraphicalObject);

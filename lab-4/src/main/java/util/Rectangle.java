@@ -1,4 +1,4 @@
-package model.impl;
+package util;
 
 public class Rectangle {
     private final int x;

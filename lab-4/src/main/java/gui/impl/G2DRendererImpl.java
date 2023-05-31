@@ -1,7 +1,7 @@
 package gui.impl;
 
 import gui.Renderer;
-import model.impl.Point;
+import util.Point;
 
 import java.awt.*;
 

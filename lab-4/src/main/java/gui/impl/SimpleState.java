@@ -3,7 +3,7 @@ package gui.impl;
 import gui.Renderer;
 import gui.State;
 import model.GraphicalObject;
-import model.impl.Point;
+import util.Point;
 
 public class SimpleState implements State {
     @Override

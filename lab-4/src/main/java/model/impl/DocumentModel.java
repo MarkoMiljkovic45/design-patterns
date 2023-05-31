@@ -4,6 +4,7 @@ import model.GraphicalObject;
 import model.listeners.DocumentModelListener;
 import model.listeners.GraphicalObjectListener;
 import util.GeometryUtil;
+import util.Point;
 
 import java.util.ArrayList;
 import java.util.Collections;

@@ -2,7 +2,7 @@ package gui.impl;
 
 import model.GraphicalObject;
 import model.impl.DocumentModel;
-import model.impl.Point;
+import util.Point;
 
 public class AddShapeState extends SimpleState {
     private final GraphicalObject prototype;

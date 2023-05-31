@@ -3,6 +3,8 @@ package model.impl;
 import model.GraphicalObject;
 import gui.Renderer;
 import util.GeometryUtil;
+import util.Point;
+import util.Rectangle;
 
 import java.util.List;
 import java.util.Stack;
@@ -61,17 +63,31 @@ public class LineSegment extends AbstractGraphicalObject {
 
     @Override
     public String getShapeID() {
-        //TODO
-        return null;
+        return "@LINE";
     }
 
     @Override
     public void load(Stack<GraphicalObject> stack, String data) {
-        //TODO
+        String[] args = data.split(" ");
+
+        int startX = Integer.parseInt(args[0]);
+        int startY = Integer.parseInt(args[1]);
+
+        int endX = Integer.parseInt(args[2]);
+        int endY = Integer.parseInt(args[3]);
+
+        LineSegment lineSegment = new LineSegment(new Point(startX, startY), new Point(endX, endY));
+        stack.push(lineSegment);
     }
 
     @Override
     public void save(List<String> rows) {
-        //TODO
+        Point start = start();
+        Point end = end();
+
+        String line = String.format("%s %d %d %d %d",
+                getShapeID(), start.getX(), start.getY(), end.getX(), end.getY());
+
+        rows.add(line);
     }
 }

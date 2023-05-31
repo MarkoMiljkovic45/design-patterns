@@ -1,5 +1,6 @@
 import gui.impl.GUI;
 import model.GraphicalObject;
+import model.impl.CompositeShape;
 import model.impl.LineSegment;
 import model.impl.Oval;
 
@@ -14,6 +15,7 @@ public class Main {
 
         objects.add(new LineSegment());
         objects.add(new Oval());
+        objects.add(new CompositeShape());
 
         SwingUtilities.invokeLater(() -> {
             GUI gui = new GUI(objects);

@@ -2,6 +2,8 @@ package model.impl;
 
 import gui.Renderer;
 import model.GraphicalObject;
+import util.Point;
+import util.Rectangle;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,25 +11,29 @@ import java.util.OptionalDouble;
 import java.util.Stack;
 
 public class CompositeShape extends AbstractGraphicalObject {
-    private final List<GraphicalObject> objects;
+    private final List<GraphicalObject> children;
 
-    public CompositeShape(List<GraphicalObject> objects, boolean selected) {
+    public CompositeShape(List<GraphicalObject> children, boolean selected) {
         super(new Point[0]);
-        this.objects = objects;
+        this.children = children;
         setSelected(selected);
     }
 
-    public CompositeShape(List<GraphicalObject> objects) {
-        this(objects, false);
+    public CompositeShape(List<GraphicalObject> children) {
+        this(children, false);
     }
 
-    public List<GraphicalObject> getObjects() {
-        return objects;
+    public CompositeShape() {
+        this(new ArrayList<>(), false);
+    }
+
+    public List<GraphicalObject> getChildren() {
+        return children;
     }
 
     @Override
     public void translate(Point delta) {
-        objects.forEach(obj -> obj.translate(delta));
+        children.forEach(obj -> obj.translate(delta));
         notifyListeners();
     }
 
@@ -38,7 +44,7 @@ public class CompositeShape extends AbstractGraphicalObject {
         int bottomRightX = -1;
         int bottomRightY = -1;
 
-        for (GraphicalObject go: objects) {
+        for (GraphicalObject go: children) {
             Rectangle goBoundingBox = go.getBoundingBox();
 
             int bbX = goBoundingBox.getX();
@@ -72,7 +78,7 @@ public class CompositeShape extends AbstractGraphicalObject {
 
     @Override
     public double selectionDistance(Point mousePoint) {
-        OptionalDouble distance = objects.stream()
+        OptionalDouble distance = children.stream()
                 .mapToDouble(obj -> obj.selectionDistance(mousePoint))
                 .min();
 
@@ -85,7 +91,7 @@ public class CompositeShape extends AbstractGraphicalObject {
 
     @Override
     public void render(Renderer r) {
-        objects.forEach(obj -> obj.render(r));
+        children.forEach(obj -> obj.render(r));
     }
 
     @Override
@@ -97,7 +103,7 @@ public class CompositeShape extends AbstractGraphicalObject {
     public GraphicalObject duplicate() {
         List<GraphicalObject> duplicates = new ArrayList<>();
 
-        for (GraphicalObject go: objects) {
+        for (GraphicalObject go: children) {
             duplicates.add(go.duplicate());
         }
 
@@ -106,17 +112,28 @@ public class CompositeShape extends AbstractGraphicalObject {
 
     @Override
     public String getShapeID() {
-        //TODO
-        return null;
+        return "@COMP";
     }
 
     @Override
     public void load(Stack<GraphicalObject> stack, String data) {
-        //TODO
+        int numOfChildren = Integer.parseInt(data);
+        CompositeShape compositeShape = new CompositeShape();
+
+        for (int i = 0; i < numOfChildren; i++) {
+            GraphicalObject go = stack.pop();
+            compositeShape.children.add(go);
+        }
+
+        stack.push(compositeShape);
     }
 
     @Override
     public void save(List<String> rows) {
-        //TODO
+        children.forEach(o -> o.save(rows));
+
+        String line = getShapeID() + " " + children.size();
+
+        rows.add(line);
     }
 }

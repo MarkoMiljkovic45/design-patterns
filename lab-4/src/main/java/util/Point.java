@@ -1,4 +1,4 @@
-package model.impl;
+package util;
 
 public class Point {
     private final int x;

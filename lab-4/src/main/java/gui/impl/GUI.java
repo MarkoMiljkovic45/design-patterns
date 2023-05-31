@@ -4,28 +4,35 @@ import gui.Renderer;
 import gui.State;
 import model.GraphicalObject;
 import model.impl.DocumentModel;
-import model.impl.Point;
+import util.Point;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.File;
-import java.io.IOError;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
 import java.util.List;
 
 public class GUI extends JFrame {
 
-    private final List<GraphicalObject> objects;
+    private final List<GraphicalObject> prototypes;
     private final DocumentModel documentModel;
     private final JCanvas canvas;
     private State currentState;
+    private final Map<String, GraphicalObject> prototypeMap;
 
-    public GUI(List<GraphicalObject> objects) {
-        this.objects = objects;
+    public GUI(List<GraphicalObject> prototypes) {
+        this.prototypes = prototypes;
         this.documentModel = new DocumentModel();
         this.canvas = new JCanvas();
         this.currentState = new IdleState();
+        this.prototypeMap = new HashMap<>();
+
+        for (GraphicalObject prototype: prototypes) {
+            prototypeMap.put(prototype.getShapeID(), prototype);
+        }
 
         initGUI();
     }
@@ -48,17 +55,23 @@ public class GUI extends JFrame {
         JToolBar toolBar = new JToolBar("tools");
         toolBar.setFloatable(true);
 
+        loadAction.putValue(Action.NAME, "Učitaj");
+        toolBar.add(loadAction);
+
+        saveAction.putValue(Action.NAME, "Pohrani");
+        toolBar.add(saveAction);
+
         svgExportAction.putValue(Action.NAME, "SVG export");
         toolBar.add(svgExportAction);
 
         toolBar.addSeparator();
 
-        for (GraphicalObject go: objects) {
+        for (GraphicalObject go: prototypes) {
             Action objectAction = new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     String shapeName = (String) getValue(NAME);
-                    objects.stream()
+                    prototypes.stream()
                             .filter(obj -> obj.getShapeName().equals(shapeName))
                             .findFirst().ifPresent(object -> {
                                 currentState.onLeaving();
@@ -107,14 +120,67 @@ public class GUI extends JFrame {
                 String fileName = fc.getSelectedFile().getAbsolutePath();
                 SVGRendererImpl r = new SVGRendererImpl(fileName);
 
-                for (GraphicalObject go: documentModel.list()) {
+                List<GraphicalObject> documentObjects = documentModel.list();
+
+                for (GraphicalObject go: documentObjects) {
                     go.render(r);
                 }
 
                 try {
                     r.close();
-                } catch (IOException io) {
+                }
+                catch (IOException io) {
                     JOptionPane.showMessageDialog(canvas, io.getMessage(), "Error while exporting", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        }
+    };
+
+    private final Action saveAction = new AbstractAction() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            JFileChooser fc = new JFileChooser();
+
+            if (fc.showOpenDialog(canvas) == JFileChooser.APPROVE_OPTION) {
+                String fileName = fc.getSelectedFile().getAbsolutePath();
+
+                List<String> rows = new ArrayList<>();
+                documentModel.list().forEach(o -> o.save(rows));
+
+                try {
+                    Files.write(Path.of(fileName), rows);
+                }
+                catch (IOException io) {
+                    JOptionPane.showMessageDialog(canvas, io.getMessage(), "Error while saving file", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        }
+    };
+
+    private final Action loadAction = new AbstractAction() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            JFileChooser fc = new JFileChooser();
+
+            if (fc.showOpenDialog(canvas) == JFileChooser.APPROVE_OPTION) {
+                try {
+                    String fileName = fc.getSelectedFile().getAbsolutePath();
+                    List<String> lines = Files.readAllLines(Path.of(fileName));
+                    Stack<GraphicalObject> stack = new Stack<>();
+
+                    for (String line: lines) {
+                        String shapeID = line.split(" ")[0];
+                        String data = line.substring(shapeID.length() + 1);
+
+                        prototypeMap.get(shapeID).load(stack, data);
+                    }
+
+                    for (GraphicalObject go: stack) {
+                        documentModel.addGraphicalObject(go);
+                    }
+                }
+                catch (IOException io) {
+                    JOptionPane.showMessageDialog(canvas, io.getMessage(), "Error while opening file", JOptionPane.ERROR_MESSAGE);
                 }
             }
         }

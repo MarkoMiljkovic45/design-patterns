@@ -3,6 +3,8 @@ package model.impl;
 import model.GraphicalObject;
 import gui.Renderer;
 import util.GeometryUtil;
+import util.Point;
+import util.Rectangle;
 
 import java.util.List;
 import java.util.Stack;
@@ -113,17 +115,31 @@ public class Oval extends AbstractGraphicalObject {
 
     @Override
     public String getShapeID() {
-        //TODO
-        return null;
+        return "@OVAL";
     }
 
     @Override
     public void load(Stack<GraphicalObject> stack, String data) {
-        //TODO
+        String[] args = data.split(" ");
+
+        int rightX = Integer.parseInt(args[0]);
+        int rightY = Integer.parseInt(args[1]);
+
+        int downX = Integer.parseInt(args[2]);
+        int downY = Integer.parseInt(args[3]);
+
+        Oval oval = new Oval(new Point(rightX, rightY), new Point(downX, downY));
+        stack.push(oval);
     }
 
     @Override
     public void save(List<String> rows) {
-        //TODO
+        Point rightHotPoint = rightHotPoint();
+        Point downHotPoint = downHotPoint();
+
+        String line = String.format("%s %d %d %d %d",
+                getShapeID(), rightHotPoint.getX(), rightHotPoint.getY(), downHotPoint.getX(), downHotPoint.getY());
+
+        rows.add(line);
     }
 }

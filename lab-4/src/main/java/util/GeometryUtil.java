@@ -1,7 +1,5 @@
 package util;
 
-import model.impl.Point;
-
 public class GeometryUtil {
     public static double distanceFromPoint(Point point1, Point point2) {
         Point diff = point1.difference(point2);

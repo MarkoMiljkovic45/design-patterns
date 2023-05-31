@@ -3,6 +3,7 @@ package model.impl;
 import model.GraphicalObject;
 import model.listeners.GraphicalObjectListener;
 import util.GeometryUtil;
+import util.Point;
 
 import java.util.ArrayList;
 import java.util.List;

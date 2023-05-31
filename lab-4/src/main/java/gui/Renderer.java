@@ -1,6 +1,6 @@
 package gui;
 
-import model.impl.Point;
+import util.Point;
 
 public interface Renderer {
     void drawLine(Point s, Point e);

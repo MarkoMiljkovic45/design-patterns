@@ -1,8 +1,8 @@
 package model;
 
 import gui.Renderer;
-import model.impl.Point;
-import model.impl.Rectangle;
+import util.Point;
+import util.Rectangle;
 import model.listeners.GraphicalObjectListener;
 
 import java.util.List;

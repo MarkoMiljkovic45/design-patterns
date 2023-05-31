@@ -3,7 +3,7 @@ package gui.impl;
 import gui.Renderer;
 import model.GraphicalObject;
 import model.impl.DocumentModel;
-import model.impl.Point;
+import util.Point;
 
 import java.util.ArrayList;
 import java.util.HashSet;

@@ -1,7 +1,7 @@
 package gui;
 
 import model.GraphicalObject;
-import model.impl.Point;
+import util.Point;
 
 public interface State {
     // poziva se kad progam registrira da je pritisnuta lijeva tipka miša

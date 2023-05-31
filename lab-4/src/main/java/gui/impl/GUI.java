@@ -9,6 +9,9 @@ import model.impl.Point;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
+import java.io.IOError;
+import java.io.IOException;
 import java.util.List;
 
 public class GUI extends JFrame {
@@ -45,6 +48,11 @@ public class GUI extends JFrame {
         JToolBar toolBar = new JToolBar("tools");
         toolBar.setFloatable(true);
 
+        svgExportAction.putValue(Action.NAME, "SVG export");
+        toolBar.add(svgExportAction);
+
+        toolBar.addSeparator();
+
         for (GraphicalObject go: objects) {
             Action objectAction = new AbstractAction() {
                 @Override
@@ -65,17 +73,50 @@ public class GUI extends JFrame {
 
         toolBar.addSeparator();
 
-        selectAction.putValue(Action.NAME, "Selektiraj");
-        toolBar.add(selectAction);
+        selectStateAction.putValue(Action.NAME, "Selektiraj");
+        toolBar.add(selectStateAction);
+
+        eraseStateAction.putValue(Action.NAME, "Brisalo");
+        toolBar.add(eraseStateAction);
 
         getContentPane().add(toolBar, BorderLayout.PAGE_START);
     }
 
-    private final Action selectAction = new AbstractAction() {
+    private final Action selectStateAction = new AbstractAction() {
         @Override
         public void actionPerformed(ActionEvent e) {
             currentState.onLeaving();
             currentState = new SelectShapeState(documentModel);
+        }
+    };
+
+    private final Action eraseStateAction = new AbstractAction() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            currentState.onLeaving();
+            currentState = new EraserState(documentModel);
+        }
+    };
+
+    private final Action svgExportAction = new AbstractAction() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            JFileChooser fc = new JFileChooser();
+
+            if (fc.showOpenDialog(canvas) == JFileChooser.APPROVE_OPTION) {
+                String fileName = fc.getSelectedFile().getAbsolutePath();
+                SVGRendererImpl r = new SVGRendererImpl(fileName);
+
+                for (GraphicalObject go: documentModel.list()) {
+                    go.render(r);
+                }
+
+                try {
+                    r.close();
+                } catch (IOException io) {
+                    JOptionPane.showMessageDialog(canvas, io.getMessage(), "Error while exporting", JOptionPane.ERROR_MESSAGE);
+                }
+            }
         }
     };
 

@@ -22,6 +22,12 @@ public class GeometryUtil {
         double lowerBound = orthogonalSlope * (x0 - x1) + y1;
         double upperBound = orthogonalSlope * (x0 - x2) + y2;
 
+        if (lowerBound > upperBound) {
+            double tmp = lowerBound;
+            lowerBound = upperBound;
+            upperBound = tmp;
+        }
+
         if (y0 > lowerBound && y0 < upperBound) {
             return Math.abs((x2 - x1) * (y1 - y0) - (x1 - x0) * (y2 - y1)) / distanceFromPoint(s, e);
         } else {

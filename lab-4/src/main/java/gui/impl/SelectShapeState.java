@@ -23,7 +23,7 @@ public class SelectShapeState extends SimpleState {
         this.model = model;
         this.selectedObject = null;
         this. hotPointIndex = -1;
-        this.previousPoint = new Point(0, 0);
+        this.previousPoint = null;
     }
 
     @Override
@@ -61,7 +61,9 @@ public class SelectShapeState extends SimpleState {
         if (hotPointIndex >= 0) {
             selectedObject.setHotPoint(hotPointIndex, mousePoint);
         } else {
-            selectedObject.translate(mousePoint.difference(previousPoint));
+            if (previousPoint != null) {
+                selectedObject.translate(mousePoint.difference(previousPoint));
+            }
             previousPoint = mousePoint;
         }
     }

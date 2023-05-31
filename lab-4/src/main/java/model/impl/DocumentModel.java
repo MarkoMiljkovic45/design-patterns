@@ -54,6 +54,7 @@ public class DocumentModel {
             } else {
                 selectedObjects.remove(go);
             }
+            notifyListeners();
         }
     };
 
@@ -146,6 +147,7 @@ public class DocumentModel {
         if (newZ < objects.size()) {
             objects.remove(go);
             objects.add(newZ, go);
+            notifyListeners();
         }
     }
 
@@ -159,9 +161,10 @@ public class DocumentModel {
 
         int newZ = objects.indexOf(go) - 1;
 
-        if (newZ > 0) {
+        if (newZ >= 0) {
             objects.remove(go);
             objects.add(newZ, go);
+            notifyListeners();
         }
     }
 
@@ -228,6 +231,8 @@ public class DocumentModel {
     }
 
     public void deselectAll() {
-        selectedObjects.forEach(o -> o.setSelected(false));
+        while (!selectedObjects.isEmpty()) {
+            selectedObjects.get(0).setSelected(false);
+        }
     }
 }

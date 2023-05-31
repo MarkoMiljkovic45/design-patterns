@@ -13,13 +13,13 @@ import java.util.List;
 
 public class GUI extends JFrame {
 
-    private final List<GraphicalObject> objectPrototypes;
+    private final List<GraphicalObject> objects;
     private final DocumentModel documentModel;
     private final JCanvas canvas;
     private State currentState;
 
-    public GUI(List<GraphicalObject> objectPrototypes) {
-        this.objectPrototypes = objectPrototypes;
+    public GUI(List<GraphicalObject> objects) {
+        this.objects = objects;
         this.documentModel = new DocumentModel();
         this.canvas = new JCanvas();
         this.currentState = new IdleState();
@@ -45,12 +45,12 @@ public class GUI extends JFrame {
         JToolBar toolBar = new JToolBar("tools");
         toolBar.setFloatable(true);
 
-        for (GraphicalObject go: objectPrototypes) {
+        for (GraphicalObject go: objects) {
             Action objectAction = new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     String shapeName = (String) getValue(NAME);
-                    objectPrototypes.stream()
+                    objects.stream()
                             .filter(obj -> obj.getShapeName().equals(shapeName))
                             .findFirst().ifPresent(object -> {
                                 currentState.onLeaving();
@@ -152,6 +152,7 @@ public class GUI extends JFrame {
             }
 
             currentState.afterDraw(renderer);
+            requestFocusInWindow();
         }
     }
 }

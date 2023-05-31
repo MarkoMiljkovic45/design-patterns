@@ -2,72 +2,27 @@ package model.impl;
 
 import gui.Renderer;
 import model.GraphicalObject;
-import model.listeners.GraphicalObjectListener;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.OptionalDouble;
+import java.util.Stack;
 
-public class CompositeShape implements GraphicalObject {
+public class CompositeShape extends AbstractGraphicalObject {
     private final List<GraphicalObject> objects;
-    private final List<GraphicalObjectListener> listeners;
-    private boolean selected;
-
-    public CompositeShape(List<GraphicalObject> objects, List<GraphicalObjectListener> listeners, boolean selected) {
-        this.objects = objects;
-        this.listeners = listeners;
-        this.selected = selected;
-    }
 
     public CompositeShape(List<GraphicalObject> objects, boolean selected) {
-        this(objects, new ArrayList<>(), selected);
+        super(new Point[0]);
+        this.objects = objects;
+        setSelected(selected);
     }
 
     public CompositeShape(List<GraphicalObject> objects) {
-        this(objects, new ArrayList<>(), false);
+        this(objects, false);
     }
 
     public List<GraphicalObject> getObjects() {
         return objects;
-    }
-
-    @Override
-    public boolean isSelected() {
-        return selected;
-    }
-
-    @Override
-    public void setSelected(boolean selected) {
-        this.selected = selected;
-        notifySelectionListeners();
-    }
-
-    @Override
-    public int getNumberOfHotPoints() {
-        throw new UnsupportedOperationException("Composite shape doesn't support hot-points");
-    }
-
-    @Override
-    public Point getHotPoint(int index) {
-        throw new UnsupportedOperationException("Composite shape doesn't support hot-points");
-    }
-
-    @Override
-    public void setHotPoint(int index, Point point) {
-        throw new UnsupportedOperationException("Composite shape doesn't support hot-points");
-    }
-
-    @Override
-    public boolean isHotPointSelected(int index) {
-        throw new UnsupportedOperationException("Composite shape doesn't support hot-points");
-    }
-
-    @Override
-    public void setHotPointSelected(int index, boolean selected) {
-        throw new UnsupportedOperationException("Composite shape doesn't support hot-points");
-    }
-
-    @Override
-    public double getHotPointDistance(int index, Point mousePoint) {
-        throw new UnsupportedOperationException("Composite shape doesn't support hot-points");
     }
 
     @Override
@@ -131,24 +86,6 @@ public class CompositeShape implements GraphicalObject {
     @Override
     public void render(Renderer r) {
         objects.forEach(obj -> obj.render(r));
-    }
-
-    @Override
-    public void addGraphicalObjectListener(GraphicalObjectListener l) {
-        listeners.add(l);
-    }
-
-    @Override
-    public void removeGraphicalObjectListener(GraphicalObjectListener l) {
-        listeners.remove(l);
-    }
-
-    protected void notifyListeners() {
-        listeners.forEach(l -> l.graphicalObjectChanged(this));
-    }
-
-    protected void notifySelectionListeners() {
-        listeners.forEach(l -> l.graphicalObjectSelectionChanged(this));
     }
 
     @Override

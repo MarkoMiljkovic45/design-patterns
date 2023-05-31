@@ -28,6 +28,7 @@ public abstract class AbstractGraphicalObject implements GraphicalObject {
     @Override
     public void setHotPoint(int index, Point hotPoint) {
         hotPoints[index] = hotPoint;
+        notifyListeners();
     }
 
     @Override
